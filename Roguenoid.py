@@ -41,7 +41,6 @@ fonte_upgrades = pygame.font.SysFont('Consolas', 18)
 # =====================================================================
 
 class Barra:
-    """Controla o jogador (paddle). Isolada em classe para facilitar upgrades na largura."""
     def __init__(self, largura=120):
         self.largura = largura
         self.altura = 15
