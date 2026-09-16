@@ -33,7 +33,6 @@ fonte_upgrades = pygame.font.SysFont('Consolas', 18)
 
 # CLASSES DO JOGO
 class Barra:
-    """Classe que representa a barra (paddle) controlada pelo jogador."""
     def __init__(self, largura=120):
         self.largura = largura
         self.altura = 15
@@ -41,55 +40,61 @@ class Barra:
         self.resetar_posicao()
 
     def resetar_posicao(self):
-        # Centraliza a barra no eixo X e posiciona perto do fundo no eixo Y
         self.rect = pygame.Rect((LARGURA_TELA - self.largura) // 2, ALTURA_TELA - 40, self.largura, self.altura)
 
     def mover(self, teclas):
-        # Movimentação contínua limitando nas bordas da tela
         if teclas[pygame.K_LEFT] and self.rect.left > 0:
             self.rect.x -= self.velocidade
         if teclas[pygame.K_RIGHT] and self.rect.right < LARGURA_TELA:
             self.rect.x += self.velocidade
 
     def desenhar(self, superficie):
-        # Desenha o retângulo da barra com bordas levemente arredondadas
         pygame.draw.rect(superficie, CORES["barra"], self.rect, border_radius=5)
 
 class Bola:
-    """Classe que controla a física, colisão e desenho da bolinha."""
     def __init__(self, x, y, vel_base=5.0, dano=1):
         self.raio = 8
         self.vel_base = vel_base
         self.dano = dano # Quanto de vida (HP) a bola tira do bloco por batida
         self.rect = pygame.Rect(x, y, self.raio*2, self.raio*2)
         
+        # Variáveis float para garantir aumento progressivo de velocidade
+        self.pos_x = float(x)
+        self.pos_y = float(y)
+        
         # Sorteia se a bola começa indo para a esquerda (-1) ou direita (1)
         self.vel_x = self.vel_base * random.choice([-1, 1])
         self.vel_y = self.vel_base # Começa caindo (Y positivo)
 
     def mover(self):
-        # Atualiza a posição da bola baseada na sua velocidade
-        self.rect.x += int(self.vel_x)
-        self.rect.y += int(self.vel_y)
+        # Atualiza a posição decimal
+        self.pos_x += self.vel_x
+        self.pos_y += self.vel_y
+        
+        # Repassa para o rect (que lida com os inteiros da tela)
+        self.rect.x = int(self.pos_x)
+        self.rect.y = int(self.pos_y)
 
         # Lógica de colisão com as paredes esquerda e direita
         if self.rect.left <= 0:
             self.rect.left = 0
+            self.pos_x = float(self.rect.x) # Sincroniza a posição decimal
             self.vel_x = abs(self.vel_x) # Inverte para positivo (vai para direita)
         elif self.rect.right >= LARGURA_TELA:
             self.rect.right = LARGURA_TELA
+            self.pos_x = float(self.rect.x)
             self.vel_x = -abs(self.vel_x) # Inverte para negativo (vai para esquerda)
             
         # Lógica de colisão com o teto
         if self.rect.top <= 0:
             self.rect.top = 0
+            self.pos_y = float(self.rect.y)
             self.vel_y = abs(self.vel_y) # Inverte para descer
 
     def desenhar(self, superficie):
         pygame.draw.circle(superficie, CORES["bola"], self.rect.center, self.raio)
 
 class Bloco:
-    """Classe que representa os blocos destrutíveis do cenário."""
     def __init__(self, x, y, hp):
         self.rect = pygame.Rect(x, y, 65, 25)
         self.hp = hp # Pontos de vida do bloco
@@ -108,7 +113,6 @@ class Bloco:
 
 # FUNÇÕES AUXILIARES DO JOGO
 def criar_blocos(nivel):
-    """Gera a matriz de blocos da fase atual. Fases maiores têm blocos mais fortes."""
     blocos = []
     linhas = min(3 + (nivel // 2), 8) # Aumenta a quantidade de linhas conforme o nível
     
@@ -124,13 +128,12 @@ def criar_blocos(nivel):
     return blocos
 
 def gerar_bola_segura(vel_global, dano):
-    """Gera uma nova bola em uma posição horizontal aleatória e vertical segura (longe da barra e blocos)."""
     x_aleatorio = random.randint(100, LARGURA_TELA - 100)
     y_seguro = 350 
     return Bola(x_aleatorio, y_seguro, vel_global, dano)
 
 # Lista com todos os upgrades disponíveis no jogo
-TODOS_UPGRADES = [
+UPGRADES = [
     {"id": "largura", "nome": "Extensão Cyber", "desc": "Sua barra fica mais larga."},
     {"id": "multiball", "nome": "Fragmentação", "desc": "Adiciona +1 Bola simultânea."},
     {"id": "dano", "nome": "Força Bruta", "desc": "Bolas causam +1 de dano."},
@@ -230,7 +233,7 @@ def main():
                     
                     estado_atual = 1 # Reinicia o jogo
 
-        # --- ESTADO 1: JOGANDO ---
+        # ESTADO 1: JOGANDO
         if estado_atual == 1:
             # Pega as teclas pressionadas simultaneamente para movimentação suave
             teclas = pygame.key.get_pressed()
@@ -278,8 +281,8 @@ def main():
             # Condição de Vitória da Fase (Se limpar todos os blocos)
             if len(blocos) == 0:
                 estado_atual = 2
-                # Sorteia 3 opções de upgrade aleatórias para o jogador escolher
-                opcoes_atuais = random.sample(TODOS_UPGRADES, 3)
+                # Sorteia 3 opções de upgrade aleatórias para o jogador escolher. Corrigido!
+                opcoes_atuais = random.sample(UPGRADES, 3)
 
             # Renderização dos objetos do jogo na tela
             barra.desenhar(tela)
@@ -291,7 +294,7 @@ def main():
             tela.blit(fonte_placar.render(f"VIDAS: {vidas}", True, CORES["hp3"]), (20, 40))
             tela.blit(fonte_placar.render(f"NÍVEL: {nivel}", True, CORES["barra"]), (LARGURA_TELA - 150, 10))
 
-        # --- ESTADO 2: TELA DE UPGRADE ---
+        # ESTADO 2: TELA DE UPGRADE
         elif estado_atual == 2:
             txt_titulo = fonte_titulo.render("UPGRADE", True, CORES["hp3"])
             tela.blit(txt_titulo, txt_titulo.get_rect(center=(LARGURA_TELA//2, 80)))
@@ -310,7 +313,7 @@ def main():
                 tela.blit(fonte_instrucoes.render(opcao['nome'], True, CORES["hp1"]), (rect_carta.x + 60, rect_carta.y + 20))
                 tela.blit(fonte_upgrades.render(opcao['desc'], True, CORES["texto"]), (rect_carta.x + 60, rect_carta.y + 50))
 
-        # --- ESTADO 3: TELA DE GAME OVER ---
+        # ESTADO 3: TELA DE GAME OVER
         elif estado_atual == 3:
             txt_titulo = fonte_titulo.render("GAME OVER", True, CORES["alerta"])
             tela.blit(txt_titulo, txt_titulo.get_rect(center=(LARGURA_TELA//2, ALTURA_TELA//2 - 60)))
@@ -328,6 +331,5 @@ def main():
         pygame.display.flip()
         relogio.tick(FPS)
 
-# Garante que o jogo só rode se este arquivo for executado diretamente
 if __name__ == "__main__":
     main()
