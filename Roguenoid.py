@@ -109,7 +109,7 @@ class Bola:
         pygame.draw.circle(superficie, CORES["bola"], self.rect.center, self.raio)
 
 class Bloco:
-    """Entidade destrutível. Possui HP (Vida) que influencia sua cor."""
+    # Entidade destrutível. Possui HP (Vida) que influencia sua cor.
     def __init__(self, x, y, hp):
         self.rect = pygame.Rect(x, y, 65, 25)
         self.hp = hp
@@ -128,10 +128,7 @@ class Bloco:
 # =====================================================================
 
 def criar_blocos(nivel):
-    """
-    Gera a matriz de blocos. A dificuldade é progressiva:
-    Quanto maior o nível, maior a chance de aparecerem blocos mais resistentes.
-    """
+   # Gera a matriz de blocos. A dificuldade é progressiva: Quanto maior o nível, maior a chance de aparecerem blocos mais resistentes.
     blocos = []
     # Limita o máximo de linhas a 8 para não invadir o espaço do jogador
     linhas = min(3 + (nivel // 2), 8) 
@@ -148,7 +145,7 @@ def criar_blocos(nivel):
     return blocos
 
 def gerar_bola_segura(vel_global, dano):
-    """Garante que novas bolas nasçam longe da barra e das paredes."""
+    # Garante que novas bolas nasçam longe da barra e das paredes.
     x_aleatorio = random.randint(100, LARGURA_TELA - 100)
     return Bola(x_aleatorio, 350, vel_global, dano)
 
