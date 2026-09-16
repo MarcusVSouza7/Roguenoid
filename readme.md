@@ -11,15 +11,15 @@ Para executar este jogo, você precisará ter instalado em sua máquina:
 
 
 ## Como executar o jogo
-1. Faça o download ou clone este repositório.
+1. Faça o download deste repositório.
 2. Abra o terminal (ou Prompt de Comando) e navegue até a pasta onde o arquivo do jogo está salvo.
 3. Instale a biblioteca Pygame executando o comando abaixo:
    ```bash
    pip install pygame
-Inicie o jogo executando o arquivo principal (supondo que o nome do arquivo seja roguenoid.py):
+Inicie o jogo executando o arquivo principal (Roguenoid.py):
 
 Bash
-python roguenoid.py
+python Roguenoid.py
 
 ## Controles
 Seta para a Esquerda: Move a barra para a esquerda.
